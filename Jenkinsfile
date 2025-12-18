@@ -1,14 +1,7 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = "employee-crud-app"
-        CONTAINER_NAME = "employee-crud"
-        APP_PORT = "8081"
-    }
-
     stages {
-
         stage('Checkout') {
             steps {
                 echo 'Checking out code...'
@@ -18,24 +11,23 @@ pipeline {
 
         stage('Maven Build & Test') {
             steps {
-                echo 'Building project with Maven...'
-                sh 'mvn clean package'
+                echo 'Building project with Maven Wrapper...'
+                sh 'chmod +x mvnw'
+                sh './mvnw clean package'
             }
         }
 
         stage('Docker Build') {
             steps {
-                echo 'Building Docker image...'
-                sh 'docker build -t $IMAGE_NAME .'
+                sh 'docker build -t employee-crud-app .'
             }
         }
 
         stage('Run Container') {
             steps {
-                echo 'Running Docker container...'
                 sh '''
-                docker rm -f $CONTAINER_NAME || true
-                docker run -d -p ${APP_PORT}:${APP_PORT} --name $CONTAINER_NAME $IMAGE_NAME
+                docker rm -f employee-crud || true
+                docker run -d -p 8081:8081 --name employee-crud employee-crud-app
                 '''
             }
         }
