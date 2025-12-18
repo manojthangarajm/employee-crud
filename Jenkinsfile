@@ -1,7 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_CONFIG = "/tmp/.docker"
+    }
+
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -10,26 +15,26 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                sh 'chmod +x mvnw'
-                sh './mvnw clean package'
+                sh '''
+                chmod +x mvnw
+                ./mvnw clean package
+                '''
             }
         }
 
-       stage('Docker Build') {
-           steps {
-               sh '''
-               export DOCKER_CONFIG=/tmp/.docker
-               mkdir -p $DOCKER_CONFIG
-               echo '{}' > $DOCKER_CONFIG/config.json
-               /usr/local/bin/docker build -t employee-crud-app .
-               '''
-           }
-       }
+        stage('Docker Build') {
+            steps {
+                sh '''
+                mkdir -p $DOCKER_CONFIG
+                echo '{}' > $DOCKER_CONFIG/config.json
+                /usr/local/bin/docker build -t employee-crud-app .
+                '''
+            }
+        }
 
         stage('Run Container') {
             steps {
                 sh '''
-                export DOCKER_CONFIG=/tmp/.docker
                 /usr/local/bin/docker rm -f employee-crud || true
                 /usr/local/bin/docker run -d -p 8081:8081 --name employee-crud employee-crud-app
                 '''
