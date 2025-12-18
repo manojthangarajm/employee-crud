@@ -4,14 +4,12 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo 'Checking out code...'
                 checkout scm
             }
         }
 
-        stage('Maven Build & Test') {
+        stage('Build & Test') {
             steps {
-                echo 'Building project with Maven Wrapper...'
                 sh 'chmod +x mvnw'
                 sh './mvnw clean package'
             }
@@ -19,15 +17,15 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh 'docker build -t employee-crud-app .'
+                sh '/usr/local/bin/docker build -t employee-crud-app .'
             }
         }
 
         stage('Run Container') {
             steps {
                 sh '''
-                docker rm -f employee-crud || true
-                docker run -d -p 8081:8081 --name employee-crud employee-crud-app
+                /usr/local/bin/docker rm -f employee-crud || true
+                /usr/local/bin/docker run -d -p 8081:8081 --name employee-crud employee-crud-app
                 '''
             }
         }
